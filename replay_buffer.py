@@ -7,7 +7,6 @@ class ReplayBuffer:
         self.mem_size = mem_size
         self.input_dim = input_dim
         self.action_dim = action_dim
-        print(input_dim, mem_size)
         self.states = np.zeros((self.mem_size, input_dim))
         self.actions = np.zeros((self.mem_size, action_dim))
         self.rewards = np.zeros(self.mem_size)

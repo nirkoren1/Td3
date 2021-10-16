@@ -35,6 +35,7 @@ if __name__ == '__main__':
             ob = observation
             observation, reward, done, info = env.step(action)
             ag.memory.save_step(ob, action, reward, observation, done)
+            ag.learn()
             score += reward
             if done:
                 break

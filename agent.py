@@ -3,7 +3,7 @@ from actor_critic import ActorNet, CriticNet
 from replay_buffer import ReplayBuffer
 import tensorflow as tf
 import tensorflow.keras as keras
-from keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam
 import numpy as np
 import pickle
 import os
@@ -74,7 +74,7 @@ class Agent:
         with tf.GradientTape(persistent=True) as tape:
             # getting the target actor actions
             target_actions = self.targrt_actor.feed_forward(states_)
-            target_actions = target_actions + tf.clip_by_value(np.random.normal(scale=0.2) - 0.5, 0.5)
+            target_actions = target_actions + tf.clip_by_value(np.random.normal(scale=0.2), - 0.5, 0.5)
             target_actions = tf.clip_by_value(target_actions, self.low_limit, self.high_limit)
 
             # calculating q1 and q2 of the target nets
@@ -93,14 +93,14 @@ class Agent:
             critic1_loss = tf.losses.MSE(target_q, q1)
             critic2_loss = tf.losses.MSE(target_q, q2)
 
-        # calculate the gradients of the two critics
-        critic1_gradient = tf.gradients(critic1_loss, self.critic1.trainable_weights)
-        critic2_gradient = tf.gradients(critic2_loss, self.critic2.trainable_weights)
+            # calculate the gradients of the two critics
+            critic1_gradient = tape.gradient(critic1_loss, self.critic1.trainable_weights)
+            critic2_gradient = tape.gradient(critic2_loss, self.critic2.trainable_weights)
 
-        self.critic1.optimizer.apply_gradients(zip(critic1_gradient, self.critic1.trainable_variables))
-        self.critic2.optimizer.apply_gradients(zip(critic2_gradient, self.critic2.trainable_variables))
+            self.critic1.optimizer.apply_gradients(zip(critic1_gradient, self.critic1.trainable_variables))
+            self.critic2.optimizer.apply_gradients(zip(critic2_gradient, self.critic2.trainable_variables))
 
-        self.learn_step_cntr += 1
+            self.learn_step_cntr += 1
 
         if self.learn_step_cntr % self.update_actor_every != 0:
             return
@@ -109,7 +109,7 @@ class Agent:
             critic1_val = self.critic1.feed_forward(states, actions)
             actor_loss = - tf.reduce_mean(critic1_val)
 
-            actor_gradient = tf.gradients(actor_loss, self.critic1.trainable_weights)
+            actor_gradient = tape.gradient(actor_loss, self.actor.trainable_weights)
             self.actor.optimizer.apply_gradients(zip(actor_gradient, self.actor.trainable_variables))
 
             self.update_nets_parameters()
