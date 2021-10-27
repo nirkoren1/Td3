@@ -24,7 +24,7 @@ class CriticNet(keras.Model):
 
 
 class ActorNet(keras.Model):
-    def __init__(self, l1_dims, l2_dims, n_actions):
+    def __init__(self, l1_dims, l2_dims, n_actions, last_act_layer):
         super(ActorNet, self).__init__()
         self.l1_dims = l1_dims
         self.l2_dims = l2_dims
@@ -32,7 +32,7 @@ class ActorNet(keras.Model):
 
         self.l1 = Dense(l1_dims, activation='relu')
         self.l2 = Dense(l2_dims, activation='relu')
-        self.a = Dense(n_actions, activation='tanh')
+        self.a = Dense(n_actions, activation="tanh")
 
     def feed_forward(self, state):
         output = self.l1(state)

@@ -1,5 +1,2 @@
-import gym
-
-env = gym.make("BipedalWalkerHardcore-v3")
-
-print(env.reward_range[0])
+for i in range(0, 8):
+    print(i ** 2, (i ** 2) % 8)

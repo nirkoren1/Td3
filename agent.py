@@ -11,7 +11,8 @@ import os
 
 class Agent:
     def __init__(self, alpha, beta, input_dims, n_actions, env_high, env_low, tau, gamma=0.99, update_actor_every=2,
-                 max_size=1_000_000, layer1_size=400, layer2_size=300, batch_size=300, noise=0.1, warmup=1_000):
+                 max_size=1_000_000, layer1_size=400, layer2_size=300, batch_size=300, noise=0.1, warmup=1_000,
+                 last_act_layer='tanh'):
         self.n_actions = n_actions
         self.high_limit = env_high
         self.low_limit = env_low
@@ -24,12 +25,13 @@ class Agent:
         self.noise = noise
         self.learn_step_cntr = 0
         self.step_cntr = 0
+        self.activation = last_act_layer
 
-        self.actor = ActorNet(layer1_size, layer2_size, n_actions)
+        self.actor = ActorNet(layer1_size, layer2_size, n_actions, last_act_layer=last_act_layer)
         self.critic1 = CriticNet(layer1_size, layer2_size)
         self.critic2 = CriticNet(layer1_size, layer2_size)
 
-        self.targrt_actor = ActorNet(layer1_size, layer2_size, n_actions)
+        self.targrt_actor = ActorNet(layer1_size, layer2_size, n_actions, last_act_layer=last_act_layer)
         self.target_critic1 = CriticNet(layer1_size, layer2_size)
         self.target_critic2 = CriticNet(layer1_size, layer2_size)
 
@@ -50,13 +52,19 @@ class Agent:
         a += np.random.normal(scale=self.noise)
         a = tf.clip_by_value(a, self.low_limit, self.high_limit)
         self.step_cntr += 1
-        return a
+        if self.activation == "tanh":
+            return a
+        elif self.activation == "softmax":
+            return np.argmax(a)
 
     def take_an_action_for_real(self, observation):
         state = tf.convert_to_tensor([observation], dtype=tf.float32)
         a = self.actor.feed_forward(state)[0]
         a = tf.clip_by_value(a, self.low_limit, self.high_limit)
-        return a
+        if self.activation == 'tanh':
+            return a
+        elif self.activation == 'softmax':
+            return np.argmax(a)
 
     def remember(self, state, action, reward, state_, done):
         self.memory.save_step(state, action, reward, state_, done)
@@ -74,8 +82,10 @@ class Agent:
         with tf.GradientTape(persistent=True) as tape:
             # getting the target actor actions
             target_actions = self.targrt_actor.feed_forward(states_)
-            target_actions = target_actions + tf.clip_by_value(np.random.normal(scale=0.2), - 0.5, 0.5)
+            target_actions = target_actions + tf.clip_by_value(np.random.normal(scale=0.2), - 0.1, 0.1) # 0.5
             target_actions = tf.clip_by_value(target_actions, self.low_limit, self.high_limit)
+            # if self.activation == "softmax":
+            #     target_actions = tf.argmax(target_actions)
 
             # calculating q1 and q2 of the target nets
             q1_ = tf.squeeze(self.target_critic1.feed_forward(states_, target_actions), 1)
@@ -106,8 +116,12 @@ class Agent:
             return
         with tf.GradientTape() as tape:
             actions = self.actor.feed_forward(states)
+            # if self.activation == "softmax":
+            #     actions = tf.argmax(actions)
             critic1_val = self.critic1.feed_forward(states, actions)
             actor_loss = - tf.reduce_mean(critic1_val)
+
+
 
         actor_gradient = tape.gradient(actor_loss, self.actor.trainable_weights)
         self.actor.optimizer.apply_gradients(zip(actor_gradient, self.actor.trainable_variables))
