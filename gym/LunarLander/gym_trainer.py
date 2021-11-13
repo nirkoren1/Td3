@@ -4,10 +4,10 @@ import sys
 import os
 import agent
 
-env = gym.make("LunarLander-v2")
+env = gym.make("LunarLanderContinuous-v2")
 ag = agent.Agent(alpha=0.001, beta=0.001, input_dims=env.observation_space.shape[0],
                  n_actions=4, env_high=1,
-                 env_low=0, tau=0.05, batch_size=100, last_act_layer='softmax')
+                 env_low=0, tau=0.05, batch_size=100, last_act_layer='tanh')
 score_history = []
 
 
@@ -36,10 +36,10 @@ if __name__ == '__main__':
             action = ag.take_an_action(observation)
             ob = observation
             observation, reward, done, info = env.step(action)
-            if reward == -100:
-                reward = -5
-            else:
-                reward = reward * 5
+            # if reward == -100:
+            #     reward = -10
+            # else:
+            #     reward = reward * 5
             ag.memory.save_step(ob, action, reward, observation, done)
             ag.learn()
             score += reward
