@@ -17,5 +17,5 @@ if __name__ == '__main__':
         observation, reward, done, info = env.step(action)
         score += reward
         if done:
-            break
+            observation = env.reset()
     print(score)
