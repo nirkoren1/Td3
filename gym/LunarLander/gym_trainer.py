@@ -3,12 +3,15 @@ import gym
 import sys
 import os
 import agent
+import animate
 
 env = gym.make("LunarLanderContinuous-v2")
 ag = agent.Agent(alpha=0.001, beta=0.001, input_dims=env.observation_space.shape[0],
-                 n_actions=4, env_high=1,
-                 env_low=0, tau=0.05, batch_size=100, last_act_layer='tanh')
+                 n_actions=env.action_space.shape[0], env_high=env.action_space.high[0],
+                 env_low=env.action_space.low[0], tau=0.05, batch_size=100
+                 )  # state_size=env.observation_space.shape[0]
 score_history = []
+history_size = 40
 
 
 def cr_new_file():
@@ -26,10 +29,9 @@ if __name__ == '__main__':
     # file_destination = cr_new_file()
     loop = 0
     best_score = -1000000000000000
+    avg_score = best_score - 1
     while True:
         loop += 1
-        sys.stdout.write(f"\r{loop}")
-        sys.stdout.flush()
         observation = env.reset()
         score = 0
         while True:
@@ -47,9 +49,12 @@ if __name__ == '__main__':
                 break
 
         score_history.append(score)
-        avg_score = np.mean(score_history[:-40])
+        if len(score_history) >= history_size:
+            avg_score = np.mean(score_history[-history_size:])
+            animate.update(avg_score)
         if avg_score > best_score:
             print('')
             ag.save_agent(r'C:\Users\Nirkoren\PycharmProjects\Td3\gym\LunarLander\agents\actor', score)
             best_score = avg_score
-        observation = env.reset()
+        sys.stdout.write(f"\rloop - {loop}  score - {score}  best - {best_score}  avg score - {avg_score}")
+        sys.stdout.flush()

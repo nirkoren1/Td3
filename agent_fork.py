@@ -1,5 +1,6 @@
 import actor_critic
 from actor_critic import ActorNet, CriticNet
+from fork import StateNet, RewardNet
 from replay_buffer import ReplayBuffer
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -10,8 +11,9 @@ import os
 
 
 class Agent:
-    def __init__(self, alpha, beta, input_dims, n_actions, env_high, env_low, tau, gamma=0.99, update_actor_every=2,
-                 max_size=1_000_000, layer1_size=400, layer2_size=300, batch_size=300, noise=0.1, warmup=1_000):
+    def __init__(self, alpha, beta, input_dims, n_actions, state_size, env_high, env_low, tau, gamma=0.99,
+                 update_actor_every=2, max_size=1_000_000, layer1_size=400, layer2_size=300, batch_size=300,
+                 noise=0.1, warmup=1_000):
         self.n_actions = n_actions
         self.high_limit = env_high
         self.low_limit = env_low
@@ -24,6 +26,7 @@ class Agent:
         self.noise = noise
         self.learn_step_cntr = 0
         self.step_cntr = 0
+        self.state_size = state_size
 
         self.actor = ActorNet(layer1_size, layer2_size, n_actions)
         self.critic1 = CriticNet(layer1_size, layer2_size)
@@ -33,6 +36,9 @@ class Agent:
         self.target_critic1 = CriticNet(layer1_size, layer2_size)
         self.target_critic2 = CriticNet(layer1_size, layer2_size)
 
+        self.reward_net = RewardNet(layer1_size, layer2_size)
+        self.state_net = StateNet(layer1_size, layer2_size, self.state_size)
+
         self.actor.compile(optimizer=Adam(learning_rate=alpha), loss='mean')
         self.critic1.compile(optimizer=Adam(learning_rate=beta), loss='mean_squared_error')
         self.critic2.compile(optimizer=Adam(learning_rate=beta), loss='mean_squared_error')
@@ -40,6 +46,9 @@ class Agent:
         self.targrt_actor.compile(optimizer=Adam(learning_rate=alpha), loss='mean')
         self.target_critic1.compile(optimizer=Adam(learning_rate=beta), loss='mean_squared_error')
         self.target_critic2.compile(optimizer=Adam(learning_rate=beta), loss='mean_squared_error')
+
+        self.reward_net.compile(optimizer=Adam(learning_rate=beta), loss='mean_squared_error')
+        self.state_net.compile(optimizer=Adam(learning_rate=alpha), loss='huber')
 
         self.update_nets_parameters(tau=1)
 
@@ -95,12 +104,28 @@ class Agent:
             critic1_loss = tf.losses.MSE(target_q, q1)
             critic2_loss = tf.losses.MSE(target_q, q2)
 
+            # calculate reward and state
+            reward = tf.squeeze(self.reward_net.feed_forward(states, actions, states_))
+            state_ = self.state_net.feed_forward(states, actions)
+
+            # calculate losses of reward and state nets
+            reward_loss = tf.losses.MSE(rewards, reward)
+            state_loss = tf.losses.huber(states_, state_)
+
         # calculate the gradients of the two critics
         critic1_gradient = tape.gradient(critic1_loss, self.critic1.trainable_weights)
         critic2_gradient = tape.gradient(critic2_loss, self.critic2.trainable_weights)
 
+        # calculate the gradients of the reward and state nets
+        reward_gradient = tape.gradient(reward_loss, self.reward_net.trainable_variables)
+        state_gradient = tape.gradient(state_loss, self.state_net.trainable_variables)
+
+        # apply gradients
         self.critic1.optimizer.apply_gradients(zip(critic1_gradient, self.critic1.trainable_variables))
         self.critic2.optimizer.apply_gradients(zip(critic2_gradient, self.critic2.trainable_variables))
+
+        self.reward_net.optimizer.apply_gradients(zip(reward_gradient, self.reward_net.trainable_variables))
+        self.state_net.optimizer.apply_gradients(zip(state_gradient, self.state_net.trainable_variables))
 
         self.learn_step_cntr += 1
 
@@ -109,7 +134,16 @@ class Agent:
         with tf.GradientTape() as tape:
             actions = self.actor.feed_forward(states)
             critic1_val = self.critic1.feed_forward(states, actions)
-            actor_loss = - tf.reduce_mean(critic1_val)
+
+            actions_ = self.actor.feed_forward(states_)
+            states__ = self.state_net.feed_forward(states_, actions_)
+            rewards_ = self.reward_net.feed_forward(states_, actions_, states__)
+
+            actions__ = self.actor.feed_forward(states__)
+            states___ = self.state_net.feed_forward(states__, actions__)
+            rewards__ = self.reward_net.feed_forward(states__, actions__, states___)
+            actor_loss = - (tf.reduce_mean(critic1_val) + tf.reduce_mean(rewards) + self.gamma *
+                            tf.reduce_mean(rewards_) + (self.gamma ** 2) * tf.reduce_mean(rewards__))
 
         actor_gradient = tape.gradient(actor_loss, self.actor.trainable_weights)
         self.actor.optimizer.apply_gradients(zip(actor_gradient, self.actor.trainable_variables))

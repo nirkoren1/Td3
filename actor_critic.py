@@ -24,7 +24,7 @@ class CriticNet(keras.Model):
 
 
 class ActorNet(keras.Model):
-    def __init__(self, l1_dims, l2_dims, n_actions, last_act_layer):
+    def __init__(self, l1_dims, l2_dims, n_actions):
         super(ActorNet, self).__init__()
         self.l1_dims = l1_dims
         self.l2_dims = l2_dims
