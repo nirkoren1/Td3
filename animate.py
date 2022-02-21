@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from matplotlib import style
 
 style.use('fivethirtyeight')
@@ -22,5 +21,3 @@ def update(y):
     line.set_data(xar, yar)
     fig1.canvas.draw()
     fig1.canvas.flush_events()
-    # plt.show()
-

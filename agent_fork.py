@@ -6,7 +6,6 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras.optimizers import Adam
 import numpy as np
-import pickle
 import os
 
 
@@ -27,6 +26,8 @@ class Agent:
         self.learn_step_cntr = 0
         self.step_cntr = 0
         self.state_size = state_size
+        self.state_threshold = 0.02
+        self.sys_weight = 0.2
 
         self.actor = ActorNet(layer1_size, layer2_size, n_actions)
         self.critic1 = CriticNet(layer1_size, layer2_size)
@@ -128,6 +129,7 @@ class Agent:
         self.state_net.optimizer.apply_gradients(zip(state_gradient, self.state_net.trainable_variables))
 
         self.learn_step_cntr += 1
+        s_flag = 1 if tf.reduce_mean(state_loss) < self.state_threshold else 0
 
         if self.learn_step_cntr % self.update_actor_every != 0:
             return
@@ -135,15 +137,22 @@ class Agent:
             actions = self.actor.feed_forward(states)
             critic1_val = self.critic1.feed_forward(states, actions)
 
-            actions_ = self.actor.feed_forward(states_)
-            states__ = self.state_net.feed_forward(states_, actions_)
-            rewards_ = self.reward_net.feed_forward(states_, actions_, states__)
+            if s_flag:
+                p_actions1 = self.actor.feed_forward(states)
+                p_state1 = self.state_net.feed_forward(states, p_actions1)
+                p_reward1 = self.reward_net.feed_forward(states, p_actions1, p_state1)
 
-            actions__ = self.actor.feed_forward(states__)
-            states___ = self.state_net.feed_forward(states__, actions__)
-            rewards__ = self.reward_net.feed_forward(states__, actions__, states___)
-            actor_loss = - (tf.reduce_mean(critic1_val) + tf.reduce_mean(rewards) + self.gamma *
-                            tf.reduce_mean(rewards_) + (self.gamma ** 2) * tf.reduce_mean(rewards__))
+                p_actions2 = self.actor.feed_forward(p_state1)
+                p_state2 = self.state_net.feed_forward(p_state1, p_actions2)
+                p_reward2 = self.reward_net.feed_forward(p_state1, p_actions2, p_state2)
+
+                p_actions3 = self.actor.feed_forward(p_state2)
+                critic1_val2 = self.critic1.feed_forward(p_state2, p_actions3)
+
+                actor_loss = - (tf.reduce_mean(critic1_val) + self.sys_weight * (tf.reduce_mean(p_reward1) + self.gamma *
+                                tf.reduce_mean(p_reward2) + (self.gamma ** 2) * tf.reduce_mean(critic1_val2)))
+            else:
+                actor_loss = - tf.reduce_mean(critic1_val)
 
         actor_gradient = tape.gradient(actor_loss, self.actor.trainable_weights)
         self.actor.optimizer.apply_gradients(zip(actor_gradient, self.actor.trainable_variables))
