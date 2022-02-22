@@ -10,7 +10,7 @@ import os
 
 
 class Agent:
-    def __init__(self, alpha, beta, input_dims, n_actions, state_size, env_high, env_low, tau, gamma=0.99,
+    def __init__(self, alpha, beta, input_dims, n_actions, env_high, env_low, tau, gamma=0.99,
                  update_actor_every=2, max_size=1_000_000, layer1_size=400, layer2_size=300, batch_size=300,
                  noise=0.1, warmup=1_000):
         self.n_actions = n_actions
@@ -25,7 +25,7 @@ class Agent:
         self.noise = noise
         self.learn_step_cntr = 0
         self.step_cntr = 0
-        self.state_size = state_size
+        self.state_size = input_dims
         self.state_threshold = 0.02
         self.sys_weight = 0.2
 
