@@ -71,6 +71,6 @@ def get_sensors_data_from_images(speed, gyro, abs1, abs2, abs3, abs4):
 def add_sensors_data_to_observation(observation, img):
     sensors_pics = get_sensors_pic(img)
     sensors = tf.convert_to_tensor([list(get_sensors_data_from_images(sensors_pics[0], sensors_pics[1], sensors_pics[2],
-                                                                  sensors_pics[3], sensors_pics[4], sensors_pics[5]))], dtype=tf.float32)
+                                                                        sensors_pics[3], sensors_pics[4], sensors_pics[5]))], dtype=tf.float32)
     observation = tf.concat([observation, sensors], 1)
     return observation

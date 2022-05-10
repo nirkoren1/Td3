@@ -37,25 +37,18 @@ if __name__ == '__main__':
             action = ag.take_an_action(observation)
             ob = observation
             action = np.array(action)
-            # real_action = action.copy()
-            # real_action[0] = (2 / (1 + np.e ** (-2 * (real_action[0] ** 5)))) - 1
-            # real_action[1] = (1 / (1 + np.e ** (-4 * (real_action[1]))))
-            # real_action[2] = (1 / (1 + np.e ** (-4 * (real_action[2]))))
-            # print(real_action)
             observation_img, reward, done, info = env.step(action)
-
-
 
             observation_raw = pre_processing(observation_img)
             observation = ag.auto_encoder.encode(observation_raw)
             observation = add_sensors_data_to_observation(observation, observation_img)
 
             observation_array = np.array(observation)[0]
-            if abs(observation_array[len(observation_array) - 5]) > 0.75:
-                reward -= 0.2 * abs(observation_array[len(observation_array) - 5])
-            # if action[1] < 0:
+            # print(observation_array[-6], observation_array[-5], observation_array[-4], observation_array[-3], observation_array[-2], observation_array[-1])
+            if abs(observation_array[len(observation_array) - 5]) > 0.6:
+                reward -= 0.5 * abs(observation_array[len(observation_array) - 5])
             reward += observation_array[len(observation_array) - 6] * 0.05
-
+            # reward += action[0] * 0.05
 
             ag.memory.save_step(ob, action, reward, observation, done, observation_raw)
             ag.learn()

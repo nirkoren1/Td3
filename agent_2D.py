@@ -11,7 +11,7 @@ from auto_encoder import AutoEncoder
 
 class Agent:
     def __init__(self, alpha, beta, input_dims, n_actions, env_high, env_low, tau, latent_dim, auto_encoder_path, gamma=0.99,
-                 update_actor_every=2, max_size=1_000_000, layer1_size=400, layer2_size=300, batch_size=300, noise=0.1,
+                 update_actor_every=2, max_size=1_000_000, layer1_size=400, layer2_size=300, batch_size=300, noise=0.15,
                  warmup=1_000, sensors_size=6):
         self.n_actions = n_actions
         self.high_limit = env_high
@@ -83,8 +83,6 @@ class Agent:
         actions = tf.convert_to_tensor(actions, dtype=tf.float32)
         states_ = tf.convert_to_tensor(states_, dtype=tf.float32)
         rewards = tf.convert_to_tensor(rewards, dtype=tf.float32)
-        # if self.auto_encoder.needs_to_learn():
-        #     self.auto_encoder.learn(states_raw)
 
         # learning of the networks
         with tf.GradientTape(persistent=True) as tape:

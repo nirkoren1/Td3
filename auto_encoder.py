@@ -14,10 +14,7 @@ class AutoEncoder(keras.Model):
         self.encoder.append(InputLayer(input_shape=(input_shape[0], input_shape[1], 1)))
         self.encoder.append(Conv2D(nu_of_filters, activation="relu", padding="same", strides=pooling_size1, kernel_size=filter_size1[0]))
         self.encoder.append(Conv2D(nu_of_filters, activation="relu", padding="same", strides=pooling_size1, kernel_size=filter_size1[0]))
-        # self.encoder.append(MaxPooling2D(pooling_size1, padding="same"))
         self.encoder.append(Flatten())
-        # self.encoder.append(Dense(latent_dim * 8, activation='relu'))
-        # self.encoder.append(Dense(latent_dim * 4, activation='relu'))
         self.encoder.append(Dense(latent_dim * 2, activation='relu'))
         self.encoder.append(Dense(latent_dim, activation='sigmoid'))
 
@@ -25,9 +22,6 @@ class AutoEncoder(keras.Model):
         self.decoder = []
         self.decoder.append(Dense(latent_dim * 2, activation='relu'))
         self.decoder.append(Dense(7 * 7 * nu_of_filters, activation='relu'))
-        # self.decoder.append(Dense(latent_dim * 4, activation='relu'))
-        # self.decoder.append(Dense(latent_dim * 8, activation='relu'))
-        # self.decoder.append(Dense(14 * 14 * nu_of_filters, activation='relu'))
         self.decoder.append(Reshape((7, 7, nu_of_filters)))
         self.decoder.append(Conv2DTranspose(nu_of_filters, filter_size1, strides=2, activation="relu", padding="same"))
         self.decoder.append(Conv2DTranspose(nu_of_filters, filter_size1, strides=2, activation="relu", padding="same"))
@@ -35,7 +29,6 @@ class AutoEncoder(keras.Model):
 
         self.epochs = 3000
         self.current_epoch = 0
-        self.is_saved = False
 
     def encode(self, state):
         state = tf.convert_to_tensor(state, dtype=tf.float32)
@@ -53,7 +46,7 @@ class AutoEncoder(keras.Model):
         return self.decode(self.encode(state))
 
     def needs_to_learn(self):
-        return self.current_epoch < self.epochs and not self.is_saved
+        return self.current_epoch < self.epochs
 
     def learn(self, states_raw):
         states_raw = tf.convert_to_tensor(states_raw, dtype=tf.float32)
@@ -68,8 +61,8 @@ class AutoEncoder(keras.Model):
         self.current_epoch += 1
 
     def save_agent(self, path):
-        if not self.needs_to_learn():
+        if self.current_epoch != self.epochs:
             return
+        self.current_epoch += 1
         self.save_weights(path)
         print("Auto encoder saved")
-        self.is_saved = True
