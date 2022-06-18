@@ -12,7 +12,7 @@ import os
 class Agent:
     def __init__(self, alpha, beta, input_dims, n_actions, env_high, env_low, tau, gamma=0.99,
                  update_actor_every=2, max_size=1_000_000, layer1_size=400, layer2_size=300, batch_size=300,
-                 noise=0.1, warmup=1_000):
+                 noise=0.4, warmup=1_000):
         self.n_actions = n_actions
         self.high_limit = env_high
         self.low_limit = env_low
@@ -27,7 +27,7 @@ class Agent:
         self.step_cntr = 0
         self.state_size = input_dims
         self.state_threshold = 0.02
-        self.sys_weight = 0.2
+        self.sys_weight = 0.07  # 0.2
 
         self.actor = ActorNet(layer1_size, layer2_size, n_actions)
         self.critic1 = CriticNet(layer1_size, layer2_size)
@@ -57,7 +57,7 @@ class Agent:
         if self.step_cntr < self.warmup:
             a = np.random.normal(scale=self.noise, size=(self.n_actions,))
         else:
-            state = tf.convert_to_tensor([observation], dtype=tf.float32)
+            state = tf.convert_to_tensor(observation, dtype=tf.float32)
             a = self.actor.feed_forward(state)[0]
         a += np.random.normal(scale=self.noise)
         a = tf.clip_by_value(a, self.low_limit, self.high_limit)
