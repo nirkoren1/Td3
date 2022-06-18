@@ -3,3 +3,4 @@ My implantation of the td3 and td3-fork algorithms by the papers: https://arxiv.
 This repository includes the codes associated with the td3 algorithm and variations (fork and 2d environment) and implementation for 3 gym environments including:
 "Bipedal Walker" "Lunar Lander" and "Car Racing"
 # THE RESULTS
+#### Bipedal Walker
