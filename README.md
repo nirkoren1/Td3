@@ -4,5 +4,6 @@ This repository includes the codes associated with the td3 algorithm and variati
 "Bipedal Walker" "Lunar Lander" and "Car Racing"
 # THE RESULTS
 #### Bipedal Walker
+Final agent
 
-![](ezgif-3-45743e532e.gif)
+![](ezgif-3-406d081c9c.gif)
