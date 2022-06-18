@@ -1,11 +1,8 @@
 import numpy as np
 import gym
 import sys
-import os
 import agent_2D
 import animate
-import cv2
-from cv2 import cvtColor, resize, COLOR_BGR2GRAY
 from utils import add_sensors_data_to_observation, pre_processing
 
 env = gym.make("CarRacing-v0")
@@ -44,11 +41,9 @@ if __name__ == '__main__':
             observation = add_sensors_data_to_observation(observation, observation_img)
 
             observation_array = np.array(observation)[0]
-            # print(observation_array[-6], observation_array[-5], observation_array[-4], observation_array[-3], observation_array[-2], observation_array[-1])
             if abs(observation_array[len(observation_array) - 5]) > 0.6:
                 reward -= 0.5 * abs(observation_array[len(observation_array) - 5])
             reward += observation_array[len(observation_array) - 6] * 0.05
-            # reward += action[0] * 0.05
 
             ag.memory.save_step(ob, action, reward, observation, done, observation_raw)
             ag.learn()
