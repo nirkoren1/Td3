@@ -57,7 +57,7 @@ class Agent:
         if self.step_cntr < self.warmup:
             a = np.random.normal(scale=self.noise, size=(self.n_actions,))
         else:
-            state = tf.convert_to_tensor(observation, dtype=tf.float32)
+            state = tf.convert_to_tensor([observation], dtype=tf.float32)
             a = self.actor.feed_forward(state)[0]
         a += np.random.normal(scale=self.noise)
         a = tf.clip_by_value(a, self.low_limit, self.high_limit)

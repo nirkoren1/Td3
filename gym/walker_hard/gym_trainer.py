@@ -3,12 +3,17 @@ import gym
 import sys
 import os
 import agent
+import time
+import winsound
+
+import record_helper
 
 env = gym.make("BipedalWalkerHardcore-v3")
 ag = agent.Agent(alpha=0.001, beta=0.001, input_dims=env.observation_space.shape[0], n_actions=env.action_space.shape[0],
                  env_high=env.action_space.high[0], env_low=env.action_space.low[0], tau=0.05, batch_size=100)
 score_history = []
 decay = 200
+recorder = record_helper.RecordHelper()
 
 
 def cr_new_file():
@@ -28,11 +33,10 @@ if __name__ == '__main__':
     best_score = -1000000000000000
     while True:
         loop += 1
-        sys.stdout.write(f"\r{loop}")
-        sys.stdout.flush()
         observation = env.reset()
         score = 0
         while True:
+            recorder.print_time(loop)
             action = ag.take_an_action(observation)
             ob = observation
             observation, reward, done, info = env.step(action)
@@ -49,14 +53,8 @@ if __name__ == '__main__':
         score_history.append(score)
         avg_score = np.mean(score_history[:-20])
         if avg_score > best_score:
-            print('')
-            ag.save_agent(r'C:\Users\Nirkoren\PycharmProjects\Td3\gym\walker_hard\agents\actor', score)
+            # print('')
+            # ag.save_agent(r'C:\Users\Nirkoren\PycharmProjects\Td3\gym\walker_hard\agents\actor', score)
             best_score = avg_score
         observation = env.reset()
-        if loop % 100 == 0:
-            while True:
-                env.render()
-                action = ag.take_an_action_for_real(observation)
-                observation, reward, done, info = env.step(action)
-                if done:
-                    break
+        recorder.render_loop(loop, env, ag, observation)

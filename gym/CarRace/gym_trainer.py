@@ -4,7 +4,9 @@ import sys
 import agent_2D
 import animate
 from utils import add_sensors_data_to_observation, pre_processing
+import record_helper
 
+recorder = record_helper.RecordHelper()
 env = gym.make("CarRacing-v0")
 ag = agent_2D.Agent(alpha=0.001, beta=0.001, input_dims=(28, 28),
                     n_actions=env.action_space.shape[0], env_high=env.action_space.high[0],
@@ -12,7 +14,7 @@ ag = agent_2D.Agent(alpha=0.001, beta=0.001, input_dims=(28, 28),
                     batch_size=100, latent_dim=64, sensors_size=6,
                     auto_encoder_path=r'C:\Users\Nirkoren\PycharmProjects\Td3\gym\CarRace\auto_encoder\weights')
 score_history = []
-history_size = 20
+history_size = 25
 auto_encoder_exist = False
 if auto_encoder_exist:
     ag.auto_encoder.load_weights(r'C:\Users\Nirkoren\PycharmProjects\Td3\gym\CarRace\auto_encoder\weights')
@@ -31,6 +33,7 @@ if __name__ == '__main__':
         observation = ag.auto_encoder.encode(observation_raw)
         observation = add_sensors_data_to_observation(observation, observation_img)
         while True:
+            recorder.print_time(loop)
             action = ag.take_an_action(observation)
             ob = observation
             action = np.array(action)
@@ -47,7 +50,7 @@ if __name__ == '__main__':
 
             ag.memory.save_step(ob, action, reward, observation, done, observation_raw)
             ag.learn()
-            env.render()
+            # env.render()
             score += reward
             if done:
                 break
@@ -55,10 +58,11 @@ if __name__ == '__main__':
         score_history.append(score)
         if len(score_history) >= history_size:
             avg_score = np.mean(score_history[-history_size:])
-            animate.update(avg_score)
+            animate.update(avg_score, r"C:\Users\Nirkoren\PycharmProjects\Td3\animate_data\car_race")
         if avg_score > best_score:
             print('')
-            ag.save_agent(r'C:\Users\Nirkoren\PycharmProjects\Td3\gym\CarRace\agents\actor', score)
+            # ag.save_agent(r'C:\Users\Nirkoren\PycharmProjects\Td3\gym\CarRace\agents\actor', score)
             best_score = avg_score
-        sys.stdout.write(f"\rloop - {loop}  score - {score}  best - {best_score}  avg score - {avg_score}")
-        sys.stdout.flush()
+        # sys.stdout.write(f"\rloop - {loop}  score - {score}  best - {best_score}  avg score - {avg_score}")
+        # sys.stdout.flush()
+        recorder.render_loop(loop, env, ag, observation)
