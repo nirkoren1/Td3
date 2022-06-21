@@ -2,12 +2,12 @@ import time
 import numpy as np
 import gym
 import os
-import agent
+import agent_fork
 import animate
 import record_helper
 
 env = gym.make("LunarLanderContinuous-v2")
-ag = agent.Agent(alpha=0.001, beta=0.001, input_dims=env.observation_space.shape[0],
+ag = agent_fork.Agent(alpha=0.001, beta=0.001, input_dims=env.observation_space.shape[0],
                       n_actions=env.action_space.shape[0], env_high=env.action_space.high[0],
                       env_low=env.action_space.low[0], tau=0.05, batch_size=100)  # state_size=env.observation_space.shape[0]
 score_history = []
@@ -49,7 +49,7 @@ if __name__ == '__main__':
         if len(score_history) >= history_size:
             avg_score = np.mean(score_history[-history_size:])
             animate_start = time.time()
-            animate.update(avg_score, "C:\\Users\\Nirkoren\\PycharmProjects\\Td3\\animate_data\\lunar_lander")
+            animate.update(avg_score, "C:\\Users\\Nirkoren\\PycharmProjects\\Td3\\animate_data\\lunar_lander_fork")
             recorder.start_time += time.time() - animate_start
         if avg_score > best_score:
             # print('')
@@ -58,4 +58,4 @@ if __name__ == '__main__':
         # sys.stdout.write(f"\rloop - {loop}  score - {score}  best - {best_score}  avg score - {avg_score}")
         # sys.stdout.flush()
 
-        # recorder.render_loop(loop, env, ag, observation)
+        recorder.render_loop(loop, env, ag, observation)

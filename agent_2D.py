@@ -63,7 +63,8 @@ class Agent:
                 states, actions, rewards, states_, dones, states_raw = self.memory.sample_buffer(self.batch_size)
                 self.auto_encoder.learn(states_raw)
             else:
-                self.auto_encoder.save_agent(self.auto_encoder_path)
+                pass
+                # self.auto_encoder.save_agent(self.auto_encoder_path)
         return a
 
     def take_an_action_for_real(self, observation):

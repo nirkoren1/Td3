@@ -60,7 +60,7 @@ if __name__ == '__main__':
             avg_score = np.mean(score_history[-history_size:])
             animate.update(avg_score, r"C:\Users\Nirkoren\PycharmProjects\Td3\animate_data\car_race")
         if avg_score > best_score:
-            print('')
+            # print('')
             # ag.save_agent(r'C:\Users\Nirkoren\PycharmProjects\Td3\gym\CarRace\agents\actor', score)
             best_score = avg_score
         # sys.stdout.write(f"\rloop - {loop}  score - {score}  best - {best_score}  avg score - {avg_score}")
