@@ -36,7 +36,7 @@ TD3-Fork compared to regular TD3 in training ephocs (Fork by the left) nearly 10
 ### Car Race
 Final Agent
 
-![](gifs_and_pictures/ezgif-2-dd627e87e8.gif)
+![](gifs_and_pictures/ezgif-4-744f3e6c17.gif)
 
 Learning process
 
