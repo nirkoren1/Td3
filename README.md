@@ -45,4 +45,4 @@ https://user-images.githubusercontent.com/72827063/177058437-47f7ae0e-bf0c-42ac-
 
 Reward by loops
 
-<img src="gifs_and_pictures/Figure 1 24_06_2022 22_35_31.png" width="400" alt="Fork"/>
+<img src="gifs_and_pictures/Figure 1 04_07_2022 0_59_31.png" width="400" alt="Fork"/>
