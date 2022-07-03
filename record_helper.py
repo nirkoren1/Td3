@@ -9,7 +9,7 @@ from utils import pre_processing, add_sensors_data_to_observation
 class RecordHelper:
     def __init__(self):
         self.start_time = time.time()
-        self.render_windows = [(0 + i * 5, 10 + i * 5) for i in range(50)]
+        self.render_windows = [(0 + i * 20, 10 + i * 20) for i in range(50)]
         self.beeped = [False for i in self.render_windows]
 
     def should_render(self):
