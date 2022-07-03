@@ -38,9 +38,9 @@ def show_fig(path):
     line, = ax1.plot(x, y, 'r', marker='o')
     ax1.set_xlim(-5, len(x) + 5)
     ax1.set_ylim(min(y) - 10, max(y) + 30)
-    line.set_data(x[:500], y[:500])
+    line.set_data(x, y)
     plt.show()
 
 
 if __name__ == '__main__':
-    show_fig(r"C:\Users\Nirkoren\PycharmProjects\Td3\animate_data\lunar_lander")
+    show_fig(r"C:\Users\Nirkoren\PycharmProjects\Td3\animate_data\car_race")

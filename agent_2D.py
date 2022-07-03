@@ -11,7 +11,7 @@ from auto_encoder import AutoEncoder
 
 class Agent:
     def __init__(self, alpha, beta, input_dims, n_actions, env_high, env_low, tau, latent_dim, auto_encoder_path, gamma=0.99,
-                 update_actor_every=2, max_size=1_000_000, layer1_size=400, layer2_size=300, batch_size=300, noise=0.15,
+                 update_actor_every=2, max_size=1_000_000, layer1_size=400, layer2_size=300, batch_size=300, noise=0.15, # 0.15
                  warmup=1_000, sensors_size=6):
         self.n_actions = n_actions
         self.high_limit = env_high

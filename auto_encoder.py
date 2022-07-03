@@ -29,6 +29,7 @@ class AutoEncoder(keras.Model):
 
         self.epochs = 3000
         self.current_epoch = 0
+        self.is_saved = False
 
     def encode(self, state):
         state = tf.convert_to_tensor(state, dtype=tf.float32)
@@ -46,7 +47,7 @@ class AutoEncoder(keras.Model):
         return self.decode(self.encode(state))
 
     def needs_to_learn(self):
-        return self.current_epoch < self.epochs
+        return self.current_epoch < self.epochs and not self.is_saved
 
     def learn(self, states_raw):
         states_raw = tf.convert_to_tensor(states_raw, dtype=tf.float32)

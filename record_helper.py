@@ -3,13 +3,13 @@ import time
 import numpy as np
 import winsound
 
-# from utils import pre_processing, add_sensors_data_to_observation
+from utils import pre_processing, add_sensors_data_to_observation
 
 
 class RecordHelper:
     def __init__(self):
         self.start_time = time.time()
-        self.render_windows = [(0 + i * 20, 10 + i * 20) for i in range(50)]
+        self.render_windows = [(0 + i * 5, 10 + i * 5) for i in range(50)]
         self.beeped = [False for i in self.render_windows]
 
     def should_render(self):
@@ -30,10 +30,10 @@ class RecordHelper:
     def render_loop(self, loop, env, ag, observation):
         render_start = time.time()
         if self.should_render():
-            # observation_img = env.reset()
-            # observation_raw = pre_processing(observation_img)
-            # observation = ag.auto_encoder.encode(observation_raw)
-            # observation = add_sensors_data_to_observation(observation, observation_img)
+            observation_img = env.reset()
+            observation_raw = pre_processing(observation_img)
+            observation = ag.auto_encoder.encode(observation_raw)
+            observation = add_sensors_data_to_observation(observation, observation_img)
             render_loop_start = time.time()
             while (time.time() - render_loop_start) / 60 <= 1.25:
                 print('\r', str(loop) + " " + str(int((time.time() - render_loop_start) / 60)) + ":" + str(
@@ -41,13 +41,13 @@ class RecordHelper:
                 env.render()
                 action = ag.take_an_action_for_real(observation)
                 action = np.array(action)
-                observation, reward, done, info = env.step(action)
-                # observation_raw = pre_processing(observation_img)
-                # observation = ag.auto_encoder.encode(observation_raw)
-                # observation = add_sensors_data_to_observation(observation, observation_img)
+                observation_img, reward, done, info = env.step(action)
+                observation_raw = pre_processing(observation_img)
+                observation = ag.auto_encoder.encode(observation_raw)
+                observation = add_sensors_data_to_observation(observation, observation_img)
                 if done:
-                    observation = env.reset()
-                    # observation_raw = pre_processing(observation_img)
-                    # observation = ag.auto_encoder.encode(observation_raw)
-                    # observation = add_sensors_data_to_observation(observation, observation_img)
+                    observation_img = env.reset()
+                    observation_raw = pre_processing(observation_img)
+                    observation = ag.auto_encoder.encode(observation_raw)
+                    observation = add_sensors_data_to_observation(observation, observation_img)
             self.start_time += time.time() - render_start

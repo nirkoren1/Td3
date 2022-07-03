@@ -1,3 +1,4 @@
+import keyboard
 import numpy as np
 import gym
 import sys
@@ -15,10 +16,26 @@ ag = agent_2D.Agent(alpha=0.001, beta=0.001, input_dims=(28, 28),
                     auto_encoder_path=r'C:\Users\Nirkoren\PycharmProjects\Td3\gym\CarRace\auto_encoder\weights')
 score_history = []
 history_size = 25
-auto_encoder_exist = False
+auto_encoder_exist = True
 if auto_encoder_exist:
     ag.auto_encoder.load_weights(r'C:\Users\Nirkoren\PycharmProjects\Td3\gym\CarRace\auto_encoder\weights')
     ag.auto_encoder.is_saved = True
+
+
+def player_help(player_action):
+    acceleration = 0.1
+    steering_acceleration = 0.2
+    player_action[0] *= acceleration
+    player_action[1] *= acceleration
+    player_action[2] *= acceleration
+    if keyboard.is_pressed('left'):
+        player_action[0] -= steering_acceleration
+    elif keyboard.is_pressed('right'):
+        player_action[0] += steering_acceleration
+    if keyboard.is_pressed('up'):
+        player_action[1] += acceleration
+    if keyboard.is_pressed('space'):
+        player_action[2] += acceleration
 
 
 if __name__ == '__main__':
@@ -37,6 +54,8 @@ if __name__ == '__main__':
             action = ag.take_an_action(observation)
             ob = observation
             action = np.array(action)
+            # if loop <= 3:
+            #     player_help(action)
             observation_img, reward, done, info = env.step(action)
 
             observation_raw = pre_processing(observation_img)
@@ -45,17 +64,18 @@ if __name__ == '__main__':
 
             observation_array = np.array(observation)[0]
             if abs(observation_array[len(observation_array) - 5]) > 0.6:
-                reward -= 0.5 * abs(observation_array[len(observation_array) - 5])
+                reward -= 0.65 * abs(observation_array[len(observation_array) - 5])  # 0.5
             reward += observation_array[len(observation_array) - 6] * 0.05
 
             ag.memory.save_step(ob, action, reward, observation, done, observation_raw)
             ag.learn()
-            # env.render()
+            # if loop <= 3:
+            #     env.render()
             score += reward
             if done:
                 break
-
-        score_history.append(score)
+        if loop > 3:
+            score_history.append(score)
         if len(score_history) >= history_size:
             avg_score = np.mean(score_history[-history_size:])
             animate.update(avg_score, r"C:\Users\Nirkoren\PycharmProjects\Td3\animate_data\car_race")
