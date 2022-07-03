@@ -32,3 +32,17 @@ TD3-Fork compared to regular TD3 in training ephocs (Fork by the left) nearly 10
 
 <img src="gifs_and_pictures/Figure 1 24_06_2022 22_35_31.png" width="400" alt="Fork"/>  <img src="gifs_and_pictures/Figure 1 24_06_2022 22_37_32.png" width="400" alt=""/>
 
+
+### Car Race
+Final Agent
+
+![](gifs_and_pictures/ezgif-2-dd627e87e8.gif)
+
+Learning process
+
+
+https://user-images.githubusercontent.com/72827063/177058437-47f7ae0e-bf0c-42ac-857c-0dffdfb16ed3.mp4
+
+Reward by loops
+
+<img src="gifs_and_pictures/Figure 1 24_06_2022 22_35_31.png" width="400" alt="Fork"/>
